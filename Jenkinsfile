@@ -36,7 +36,7 @@ pipeline {
                         pip install pytest selenium
 
                         sleep 15
-                        python test_devopstest.py
+                        python test_aimanTest.py
                         '''
                 }
             }
