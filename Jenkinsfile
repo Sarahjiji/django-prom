@@ -18,6 +18,7 @@ pipeline {
                 script {
                     // Start services and expose them to localhost
                     sh 'docker compose up -d'
+                    sh 'docker ps'
                 }
             }
         }
