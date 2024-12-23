@@ -18,14 +18,6 @@ pipeline {
                 script {
                     // Start services and expose them to localhost
                     sh 'docker compose up -d'
-
-                    // Wait for backend to be ready
-                    sh '''
-                        until curl -f http://localhost:8000; do
-                            echo "Waiting for backend service to be available..."
-                            sleep 5
-                        done
-                    '''
                 }
             }
         }
