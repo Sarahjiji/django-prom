@@ -2,32 +2,38 @@ pipeline {
     agent any
     
     stages {
-
         stage('Build') {
             steps {
                 script {
+                    // Update system and check Docker Compose version
                     sh 'apt-get update'
                     sh 'apt-get upgrade -y'
-
-                    sh '''
-                       
-                        docker compose version
-                        '''
-                    
+                    sh 'docker compose version'
                 }
             }
         }
-        stage('Test') {
+
+        stage('Deploy Services') {
             steps {
                 script {
+                    // Start services and expose them to localhost
+                    sh 'docker compose up -d'
 
-                    sh 'apt-get update'
-                    sh 'apt-get upgrade -y'
+                    // Wait for backend to be ready
                     sh '''
-                        docker compose version
-                        docker compose up -d
-                        '''
+                        until curl -f http://localhost:8000; do
+                            echo "Waiting for backend service to be available..."
+                            sleep 5
+                        done
+                    '''
+                }
+            }
+        }
 
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Install Python and dependencies
                     sh 'apt-get install -y python3 python3-venv python3-pip'
 
                     sh '''
@@ -35,10 +41,23 @@ pipeline {
                         . .venv/bin/activate
                         pip install pytest selenium
 
-                        sleep 15
+                        # Run the test script
                         python test_aimanTest.py
-                        '''
+                    '''
                 }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Keep services running so results are visible on localhost
+                sh '''
+                    echo "Services are running. Access results at:"
+                    echo "Backend: http://localhost:8000"
+                    echo "Frontend: http://localhost:81"
+                '''
             }
         }
     }
